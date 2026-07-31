@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>智能记账本</title>
 <style>
@@ -20,26 +20,24 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--dark);padding-bottom:80px;max-width:600px;margin:0 auto}
-
-/* 头部 */
 .header{text-align:center;padding:20px 15px 25px;background:linear-gradient(135deg,#4a90e2,#6aa3e8);color:#fff;border-radius:0 0 20px 20px;margin-bottom:15px;box-shadow:0 4px 12px rgba(74,144,226,.3);position:relative;overflow:hidden}
 .header::after{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.08)}
 .date-display{font-size:13px;opacity:.9;position:relative;z-index:1}
 .total-amount{font-size:36px;font-weight:700;margin:8px 0;position:relative;z-index:1}
 .header-row{display:flex;justify-content:center;gap:15px;position:relative;z-index:1}
 .header-pill{background:rgba(255,255,255,.22);padding:4px 14px;border-radius:16px;font-size:13px;font-weight:600}
-
-/* 预算条 */
-.budget-wrap{margin:0 15px 10px;background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.04);display:none}
+.period-toggle{display:inline-flex;background:rgba(255,255,255,.18);border-radius:18px;padding:3px;margin-bottom:6px;position:relative;z-index:1}
+.period-btn{border:none;background:transparent;color:#fff;font-size:13px;font-weight:600;padding:5px 16px;border-radius:15px;cursor:pointer;transition:all .25s;opacity:.85}
+.period-btn.on{background:#fff;color:var(--primary);opacity:1;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.total-label{font-size:12px;opacity:.85;margin-bottom:2px;position:relative;z-index:1}
+.budget-wrap{margin:0 15px 10px;background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .budget-top{display:flex;justify-content:space-between;font-size:12px;color:var(--gray);margin-bottom:5px}
 .budget-track{height:6px;background:#f0f0f5;border-radius:3px;overflow:hidden}
 .budget-fill{height:100%;border-radius:3px;transition:width .5s;background:var(--success)}
 .budget-fill.warn{background:var(--warning)}
 .budget-fill.danger{background:var(--danger);animation:pulse 1s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
-
-/* 攒钱进度条 */
-.save-wrap{margin:0 15px 15px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(245,158,11,.15);border:1.5px solid #fde68a;display:none}
+.save-wrap{margin:0 15px 15px;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(245,158,11,.15);border:1.5px solid #fde68a}
 .save-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .save-title{font-size:14px;font-weight:700;color:#92400e;display:flex;align-items:center;gap:6px}
 .save-target-text{font-size:12px;color:#b45309}
@@ -51,8 +49,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Ari
 .save-details .saved{font-weight:700;font-size:14px;color:#b45309}
 .save-details .remaining{color:#b45309}
 .save-details .remaining.zero{color:var(--success);font-weight:700}
-
-/* 输入区 */
 .quick-input{background:#fff;padding:18px 15px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.05);margin:0 15px 15px}
 .hint{font-size:12px;color:var(--gray);margin-bottom:10px;line-height:1.6}
 .hint b{color:var(--primary)}
@@ -60,13 +56,9 @@ textarea{width:100%;height:72px;padding:12px;border:1.5px solid var(--border);bo
 textarea:focus{border-color:var(--primary)}
 .btn-primary{width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:12px;transition:background .2s}
 .btn-primary:active{background:var(--primary-dark);transform:scale(.98)}
-
-/* 快捷标签 */
 .quick-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .qtag{display:inline-block;padding:5px 12px;background:#f0f4f8;border:1px solid #e0e6ed;border-radius:16px;font-size:12px;color:#555;cursor:pointer;transition:all .15s}
 .qtag:active{background:#e8f0fe;color:var(--primary);border-color:var(--primary);transform:scale(.95)}
-
-/* 预览区 */
 .preview-box{margin-top:12px;padding:12px;background:#f0f4ff;border:1.5px solid #d6e4ff;border-radius:12px;display:none}
 .preview-box.on{display:block}
 .preview-title{font-size:13px;color:var(--primary);font-weight:600;margin-bottom:8px}
@@ -81,14 +73,10 @@ textarea:focus{border-color:var(--primary)}
 .preview-actions button{flex:1;padding:10px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none}
 .btn-edit-all{background:#fff;border:1.5px solid var(--primary)!important;color:var(--primary)}
 .btn-save-all{background:var(--primary);color:#fff}
-
-/* 筛选 */
 .filter-bar{display:flex;gap:6px;padding:0 15px 10px;overflow-x:auto;scrollbar-width:none}
 .filter-bar::-webkit-scrollbar{display:none}
 .filter-bar button{flex-shrink:0;padding:6px 14px;border-radius:16px;border:1.5px solid #d5d8dc;background:#fff;font-size:13px;cursor:pointer;color:#666}
 .filter-bar button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
-
-/* 列表 */
 .record-list{list-style:none;padding:0 15px}
 .record-item{background:#fff;padding:14px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.03);animation:slideIn .3s ease}
 @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -100,81 +88,55 @@ textarea:focus{border-color:var(--primary)}
 .amount-expense{color:var(--danger)}
 .amount-save{color:var(--save-color)}
 .record-actions{display:flex;gap:2px}
-.act-btn{width:32px;height:32px;border:none;background:transparent;font-size:15px;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.act-btn{width:36px;height:36px;border:none;background:transparent;font-size:18px;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center}
 .act-btn:active{background:#f0f0f5;transform:scale(.85)}
-
-/* 搜索 */
 .search-wrap{position:relative;padding:0 15px 10px}
 .search-input{width:100%;padding:9px 12px 9px 36px;border:1.5px solid #e0e6ed;border-radius:10px;font-size:14px;outline:none;background:#fff}
 .search-icon{position:absolute;left:24px;top:50%;transform:translateY(-50%);font-size:14px;color:#bbb}
-
-/* 空状态 */
 .empty-state{text-align:center;padding:40px 20px;color:var(--gray)}
 .empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
-
-/* 底部导航 */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;display:flex;justify-content:space-around;align-items:center;box-shadow:0 -2px 10px rgba(0,0,0,.06);z-index:100;max-width:600px;margin:0 auto}
 .nav-item{display:flex;flex-direction:column;align-items:center;color:var(--gray);font-size:11px;cursor:pointer;padding:4px 8px}
 .nav-item.active{color:var(--primary);font-weight:600}
 .nav-icon{font-size:22px;margin-bottom:2px}
-
-/* 弹窗通用 */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:flex-end}
 .modal-overlay.on{display:flex}
 .modal-content{background:#fff;width:100%;max-width:600px;border-radius:20px 20px 0 0;padding:20px 20px 28px;max-height:85vh;overflow-y:auto}
 .modal-title{font-size:17px;font-weight:700;margin-bottom:6px;text-align:center}
 .modal-sub{font-size:12px;color:var(--gray);margin-bottom:14px;text-align:center}
-
-/* 类型切换 */
 .type-toggle{display:flex;gap:8px;margin-bottom:14px}
 .type-toggle button{flex:1;padding:10px;border-radius:10px;border:1.5px solid #d5d8dc;background:#fff;font-size:14px;font-weight:600;cursor:pointer}
 .type-toggle button.on-e{background:var(--danger);color:#fff;border-color:var(--danger)}
 .type-toggle button.on-i{background:var(--success);color:#fff;border-color:var(--success)}
 .type-toggle button.on-s{background:var(--save-color);color:#fff;border-color:var(--save-color)}
-
-/* 金额输入 */
 .amt-input{width:100%;text-align:center;font-size:30px;font-weight:700;border:none;outline:none;padding:8px 0;border-bottom:1.5px solid #eee;margin-bottom:14px;font-family:inherit;color:var(--dark)}
 .amt-input::placeholder{color:#ccc;font-weight:400}
-
-/* 分类网格 */
 .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
 .cat-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:8px;border:2px solid transparent;background:#f8f9fa;cursor:pointer;font-size:11px;color:#555}
 .cat-btn.on{border-color:var(--primary);background:#eef4ff;color:var(--primary)}
 .cat-btn .e2{font-size:20px}
-
-/* 备注 */
 .note-inp{width:100%;padding:10px 12px;border:1.5px solid #e0e6ed;border-radius:10px;font-size:14px;margin-bottom:14px;outline:none}
 .note-inp:focus{border-color:var(--primary)}
-
-/* 弹窗按钮 */
 .modal-actions{display:flex;gap:10px}
-.btn-cancel{background:var(--light);color:var(--dark);flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-cancel{background:#f0f2f5;color:var(--dark);flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
 .btn-save{background:var(--primary);color:#fff;flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
 .btn-save:active{transform:scale(.98)}
 .btn-danger{background:var(--danger);color:#fff;flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
-
-/* 确认弹窗 */
 .confirm-box{background:#fff;border-radius:16px;padding:24px 20px 16px;width:280px;text-align:center;margin:auto}
 .confirm-emoji{font-size:42px;margin-bottom:8px}
 .confirm-text{font-size:15px;font-weight:600;margin-bottom:4px}
 .confirm-sub{font-size:13px;color:var(--gray);margin-bottom:16px}
 .confirm-actions{display:flex;gap:10px}
 .confirm-actions button{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none}
-
-/* 提醒弹窗 */
 .alert-box{background:#fff;border-radius:18px;padding:28px 22px 20px;width:300px;text-align:center;margin:auto}
 .alert-emoji{font-size:48px;margin-bottom:10px}
 .alert-title{font-size:17px;font-weight:700;margin-bottom:6px}
 .alert-msg{font-size:14px;color:#666;line-height:1.6;margin-bottom:18px;white-space:pre-line}
-
-/* Toast */
 .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);background:rgba(44,62,80,.92);color:#fff;padding:13px 26px;border-radius:12px;font-size:14px;font-weight:500;z-index:2000;opacity:0;pointer-events:none;transition:all .3s;max-width:80vw;text-align:center}
 .toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .toast.warn{background:rgba(250,173,20,.95)}
 .toast.danger{background:rgba(255,77,79,.95)}
 .toast.success{background:rgba(16,185,129,.95)}
-
-/* 统计卡片 */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 15px 15px}
 .stat-card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .stat-card h4{font-size:12px;color:var(--gray);margin-bottom:6px;font-weight:500}
@@ -183,8 +145,6 @@ textarea:focus{border-color:var(--primary)}
 .stat-val.expense{color:var(--danger)}
 .stat-val.balance{color:var(--primary)}
 .stat-val.saved{color:var(--save-color)}
-
-/* 图表 */
 .chart-card{background:#fff;border-radius:12px;padding:14px;margin:0 15px 15px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .chart-card h4{font-size:13px;font-weight:600;margin-bottom:10px}
 .chart{display:flex;align-items:flex-end;gap:6px;height:80px;padding:0 4px}
@@ -194,8 +154,6 @@ textarea:focus{border-color:var(--primary)}
 .chart-bar.i{background:linear-gradient(180deg,#73d897,#50c878)}
 .chart-bar.s{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
 .chart-label{font-size:9px;color:#bbb}
-
-/* 分类条 */
 .cat-bars{padding:0 15px 15px}
 .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .cat-name{font-size:12px;width:50px;flex-shrink:0;display:flex;align-items:center;gap:3px}
@@ -206,18 +164,21 @@ textarea:focus{border-color:var(--primary)}
 </head>
 <body>
 
-<!-- 主界面 -->
-<div id="main-view">
+<div id="mainView">
   <div class="header">
-    <div class="date-display" id="current-date"></div>
-    <div class="total-amount">¥<span id="total-amount">0.00</span></div>
+    <div class="period-toggle">
+      <button class="period-btn on" id="btnDay" onclick="setHeaderPeriod('day',this)">今日</button>
+      <button class="period-btn" id="btnMonth" onclick="setHeaderPeriod('month',this)">本月</button>
+    </div>
+    <div class="date-display" id="currentDate"></div>
+    <div class="total-label" id="totalLabel">今日结余</div>
+    <div class="total-amount">¥<span id="totalAmount">0.00</span></div>
     <div class="header-row">
-      <div class="header-pill">💰 收入 +¥<span id="header-inc">0</span></div>
-      <div class="header-pill">💸 支出 -¥<span id="header-exp">0</span></div>
+      <div class="header-pill">💰 收入 +¥<span id="headerInc">0</span></div>
+      <div class="header-pill">💸 支出 -¥<span id="headerExp">0</span></div>
     </div>
   </div>
 
-  <!-- 攒钱目标 -->
   <div class="save-wrap" id="saveWrap">
     <div class="save-header">
       <div class="save-title"><span style="font-size:20px">🐷</span> 攒钱目标</div>
@@ -230,7 +191,6 @@ textarea:focus{border-color:var(--primary)}
     </div>
   </div>
 
-  <!-- 预算条 -->
   <div class="budget-wrap" id="budgetWrap">
     <div class="budget-top">
       <span id="budgetLabel">月度预算</span>
@@ -239,15 +199,13 @@ textarea:focus{border-color:var(--primary)}
     <div class="budget-track"><div class="budget-fill" id="budgetFill" style="width:0%"></div></div>
   </div>
 
-  <!-- 输入区 -->
   <div class="quick-input">
     <div class="hint">
       💡 <b>一句话拆多条</b>：用逗号/句号/分号/顿号分隔<br>
       支持小数：<b>9.9</b>、<b>8.72</b>、<b>三块五</b>、<b>两元</b>
     </div>
-    <textarea id="voice-input" placeholder='试试："吃酸奶9块9，吃米布丁8块7，吃麻薯11块9"' autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+    <textarea id="voiceInput" placeholder='试试："吃酸奶9块9，吃米布丁8块7，吃麻薯11块9"' autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
     <button class="btn-primary" onclick="parseAndShow()">🔍 智能识别</button>
-
     <div class="quick-tags">
       <span class="qtag" onclick="fillEx('吃酸奶9块9，吃米布丁8块7，吃麻薯11块9')">酸奶9.9,布丁8.7,麻薯11.9</span>
       <span class="qtag" onclick="fillEx('公交花了5角，地铁花了两元')">公交5角，地铁两元</span>
@@ -256,8 +214,6 @@ textarea:focus{border-color:var(--primary)}
       <span class="qtag" onclick="fillEx('发工资12000，交房租2500')">发工资，交房租</span>
       <span class="qtag" onclick="fillEx('攒了500，存了1000')">攒500，存1000</span>
     </div>
-
-    <!-- 预览区 -->
     <div class="preview-box" id="previewBox">
       <div class="preview-title" id="previewTitle">识别到 0 条记录</div>
       <div id="previewList"></div>
@@ -268,13 +224,11 @@ textarea:focus{border-color:var(--primary)}
     </div>
   </div>
 
-  <!-- 搜索 -->
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input class="search-input" placeholder="搜索备注或分类..." oninput="onSearch(this.value)">
   </div>
 
-  <!-- 筛选 -->
   <div class="filter-bar" id="filterBar">
     <button class="on" onclick="setFilter('all',this)">全部</button>
     <button onclick="setFilter('today',this)">今天</button>
@@ -285,10 +239,8 @@ textarea:focus{border-color:var(--primary)}
     <button onclick="setFilter('save',this)">🐷攒钱</button>
   </div>
 
-  <!-- 列表 -->
-  <ul class="record-list" id="record-list"></ul>
-
-  <div id="empty-state" class="empty-state">
+  <ul class="record-list" id="recordList"></ul>
+  <div id="emptyState" class="empty-state">
     <div class="empty-icon">📝</div>
     <div>暂无记账记录</div>
     <div style="font-size:12px;margin-top:6px;color:#bbb">在上方输入一句话开始记账</div>
@@ -296,36 +248,18 @@ textarea:focus{border-color:var(--primary)}
 </div>
 
 <!-- 统计界面 -->
-<div id="stats-view" style="display:none">
+<div id="statsView" style="display:none">
   <div class="header">
     <div class="total-amount">📊 统计</div>
     <div>本月收支概览</div>
   </div>
   <div class="stats-grid">
-    <div class="stat-card">
-      <h4>本月收入</h4>
-      <div class="stat-val income" id="stat-inc">¥0</div>
-    </div>
-    <div class="stat-card">
-      <h4>本月支出</h4>
-      <div class="stat-val expense" id="stat-exp">¥0</div>
-    </div>
-    <div class="stat-card">
-      <h4>本月结余</h4>
-      <div class="stat-val balance" id="stat-bal">¥0</div>
-    </div>
-    <div class="stat-card">
-      <h4>已攒金额</h4>
-      <div class="stat-val saved" id="stat-saved">¥0</div>
-    </div>
-    <div class="stat-card">
-      <h4>记账笔数</h4>
-      <div class="stat-val" id="stat-cnt" style="color:var(--primary)">0</div>
-    </div>
-    <div class="stat-card">
-      <h4>攒钱进度</h4>
-      <div class="stat-val saved" id="stat-save-pct">0%</div>
-    </div>
+    <div class="stat-card"><h4>本月收入</h4><div class="stat-val income" id="statInc">¥0</div></div>
+    <div class="stat-card"><h4>本月支出</h4><div class="stat-val expense" id="statExp">¥0</div></div>
+    <div class="stat-card"><h4>本月结余</h4><div class="stat-val balance" id="statBal">¥0</div></div>
+    <div class="stat-card"><h4>已攒金额</h4><div class="stat-val saved" id="statSaved">¥0</div></div>
+    <div class="stat-card"><h4>记账笔数</h4><div class="stat-val" id="statCnt" style="color:var(--primary)">0</div></div>
+    <div class="stat-card"><h4>攒钱进度</h4><div class="stat-val saved" id="statSavePct">0%</div></div>
   </div>
   <div class="chart-card">
     <h4>📈 近7天趋势（绿=收入 红=支出 黄=攒钱）</h4>
@@ -340,12 +274,8 @@ textarea:focus{border-color:var(--primary)}
 </div>
 
 <!-- 设置界面 -->
-<div id="settings-view" style="display:none">
-  <div class="header">
-    <div class="total-amount">⚙️ 设置</div>
-  </div>
-
-  <!-- 攒钱目标设置 -->
+<div id="settingsView" style="display:none">
+  <div class="header"><div class="total-amount">⚙️ 设置</div></div>
   <div class="quick-input">
     <div style="font-size:14px;font-weight:600;margin-bottom:4px">🐷 攒钱目标</div>
     <div style="font-size:12px;color:var(--gray);margin-bottom:12px;line-height:1.6">
@@ -359,8 +289,6 @@ textarea:focus{border-color:var(--primary)}
     <div id="saveGoalInfo" style="font-size:12px;color:#92400e;margin-bottom:8px;display:flex;align-items:center;gap:4px"></div>
     <button onclick="clearSaveGoal()" style="width:100%;padding:8px;background:#fff;color:var(--gray);border:1px solid #e0e6ed;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:10px">🗑️ 清除攒钱目标</button>
   </div>
-
-  <!-- 预算设置 -->
   <div class="quick-input">
     <div style="font-size:14px;font-weight:600;margin-bottom:4px">🎯 预算设置</div>
     <div style="font-size:12px;color:var(--gray);margin-bottom:12px;line-height:1.6">
@@ -379,14 +307,13 @@ textarea:focus{border-color:var(--primary)}
     </div>
     <button class="btn-primary" onclick="saveBudget()" style="margin-top:0">💾 保存预算</button>
   </div>
-
   <div class="quick-input">
     <button onclick="exportCSV()" style="width:100%;padding:12px;background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">📤 导出 CSV</button>
     <button onclick="clearAllData()" style="width:100%;padding:12px;background:var(--danger);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">🗑️ 清空所有数据</button>
   </div>
 </div>
 
-<!-- 底部导航 -->
+<!-- 底部导航（已移除"手动"按钮） -->
 <div class="bottom-nav">
   <div class="nav-item active" onclick="switchTab('main',this)">
     <div class="nav-icon">🏠</div>
@@ -395,10 +322,6 @@ textarea:focus{border-color:var(--primary)}
   <div class="nav-item" onclick="switchTab('stats',this)">
     <div class="nav-icon">📊</div>
     <div>统计</div>
-  </div>
-  <div class="nav-item" onclick="openNew()">
-    <div class="nav-icon">✏️</div>
-    <div>手动</div>
   </div>
   <div class="nav-item" onclick="switchTab('settings',this)">
     <div class="nav-icon">⚙️</div>
@@ -449,7 +372,6 @@ textarea:focus{border-color:var(--primary)}
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
@@ -476,6 +398,7 @@ var records = JSON.parse(localStorage.getItem('smart_records') || '[]');
 var budget = JSON.parse(localStorage.getItem('budget_cfg') || '{"daily":0,"month":0}');
 var saveGoal = JSON.parse(localStorage.getItem('save_goal') || '{"target":0,"saved":0}');
 var filter = 'all';
+var headerPeriod = 'day';
 var searchQ = '';
 var pending = [];
 var editingId = null;
@@ -483,6 +406,13 @@ var editingIdx = -1;
 var mType = 'expense';
 var mCat = '';
 var alerted = JSON.parse(localStorage.getItem('alerted') || '{}');
+
+// ===== 唯一ID生成器 =====
+var _idCounter = 0;
+function genId() {
+  _idCounter++;
+  return Date.now().toString(36) + '_' + _idCounter + '_' + Math.random().toString(36).substr(2, 9);
+}
 
 // ===== 中文数字 =====
 var CN_NUM = {'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'百':100,'千':1000,'万':10000};
@@ -492,17 +422,27 @@ updateDate();
 render();
 checkBudgetOnLoad();
 
-// ===== 日期 =====
 function updateDate(){
   var now = new Date();
-  document.getElementById('current-date').textContent = now.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  if(headerPeriod === 'month'){
+    document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN',{year:'numeric',month:'long'}) + ' · 本月';
+  } else {
+    document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  }
 }
 
-// ===== 核心：按标点拆分多句（逐字符扫描）=====
+function setHeaderPeriod(p, el){
+  headerPeriod = p;
+  document.getElementById('btnDay').classList.toggle('on', p === 'day');
+  document.getElementById('btnMonth').classList.toggle('on', p === 'month');
+  updateDate();
+  updateTotals();
+}
+
+// ===== 按标点拆分多句 =====
 function parseTextMulti(text){
   var results = [];
   var t = text.trim();
-  // 分隔符集合（注意：小数点'.'不是分隔符，否则9.9会被拆成9和9）
   var SEP = {'，':1,',':1,'；':1,';':1,'。':1,'、':1,'！':1,'!':1,'？':1,'?':1,'\n':1,'\r':1};
   var parts = [];
   var buf = '';
@@ -523,13 +463,11 @@ function parseTextMulti(text){
     if(r && r.amount > 0) results.push(r);
   });
 
-  // 兜底：整句
   if(results.length === 0){
     var r = parseSingle(t);
     if(r && r.amount > 0) results.push(r);
   }
 
-  // 兜底：提取所有数字
   if(results.length === 0){
     var nums = t.match(/\d+(\.\d+)?/g);
     if(nums && nums.length > 0){
@@ -538,10 +476,7 @@ function parseTextMulti(text){
         if(val > 0){
           var sub = t.replace(n, '');
           var r2 = parseSingle(sub);
-          if(r2) {
-            r2.amount = val;
-            results.push(r2);
-          }
+          if(r2) { r2.amount = val; results.push(r2); }
         }
       });
     }
@@ -549,127 +484,79 @@ function parseTextMulti(text){
   return results;
 }
 
-// ===== 单句识别（修复小数Bug）=====
+// ===== 单句识别 =====
 function parseSingle(text){
   var t = text.toLowerCase();
   var result = {type:'expense', amount:0, cat:'其他', catEmo:'📦', note:'', raw:text};
   var amt = 0;
 
-  // === 按优先级从高到低匹配 ===
-
-  // 1. "X块Y毛/角" → 如"1块5毛"=1.5, "3块5"=3.5
+  // 1. "X块Y毛/角"
   var m1 = text.match(/(\d+(?:\.\d+)?)\s*(块|元|块钱)\s*(\d+(?:\.\d+)?)\s*(毛|角)/);
   if(m1){ amt = parseFloat(m1[1]) + parseFloat(m1[3])/10; }
 
-  // 2. 中文数字 "三块五" "五块" "两元" "两块钱"
+  // 2. 中文数字
   if(amt === 0){
     var cm = text.match(/([一二三四五六七八九十百千万两])\s*(块|元|块钱)(?:\s*([一二三四五六七八九十两])\s*(毛|角))?/);
-    if(cm){
-      amt = CN_NUM[cm[1]] || 0;
-      if(cm[3] && CN_NUM[cm[3]]) amt += CN_NUM[cm[3]]/10;
-    }
+    if(cm){ amt = CN_NUM[cm[1]] || 0; if(cm[3] && CN_NUM[cm[3]]) amt += CN_NUM[cm[3]]/10; }
   }
 
-  // 3. 独立"X毛""X角"（中文数字）如"五毛""两角"
+  // 3. 独立"X毛""X角"
   if(amt === 0){
     var cj = text.match(/([一二三四五六七八九十两])\s*(毛|角)/);
-    if(cj){
-      var bef = text.substring(Math.max(0, cj.index - 2), cj.index);
-      if(!bef.match(/(块|元)/)){
-        amt = (CN_NUM[cj[1]] || 0) / 10;
-      }
-    }
+    if(cj){ var bef = text.substring(Math.max(0, cj.index - 2), cj.index); if(!bef.match(/(块|元)/)){ amt = (CN_NUM[cj[1]] || 0) / 10; } }
   }
 
-  // 4. 数字"X角钱""X毛钱" 如"5角钱""8毛钱"
+  // 4. 数字"X角钱"
   if(amt === 0){
     var m2 = text.match(/(\d+(?:\.\d+)?)\s*(角|毛)\s*钱?/);
-    if(m2){
-      var b2 = text.substring(Math.max(0, m2.index - 2), m2.index);
-      if(!b2.match(/(块|元)/)){
-        amt = parseFloat(m2[1]) / 10;
-      }
-    }
+    if(m2){ var b2 = text.substring(Math.max(0, m2.index - 2), m2.index); if(!b2.match(/(块|元)/)){ amt = parseFloat(m2[1]) / 10; } }
   }
 
-  // 5. 万（注意：必须在小数和整数之前，避免干扰）
+  // 5. 万
   if(amt === 0){
     var mw = text.match(/(\d+(?:\.\d+)?)\s*(万|w)/i);
     if(mw) amt = parseFloat(mw[1]) * 10000;
   }
 
-  // 6. 小数 "9.9块" "8.72元" "25.5" —— 优先匹配，避免被整数规则抢走
+  // 6. 小数
   var m5 = text.match(/(\d+\.\d+)\s*(块钱|元|块|毛|角)?/);
   if(m5) amt = parseFloat(m5[1]);
 
-  // 6b. "X块Y" 模式：如"9块9"="9.9元"、"8块72"=不常见，但"9块9"很常见
+  // 7. "X块Y"
   if(amt === 0){
     var mblock = text.match(/(\d+(?:\.\d+)?)\s*块\s*(\d+)/);
-    if(mblock){
-      // "9块9" → 9.9 ；如果后面是两位（如"8块72"），则是8.72
-      var whole = parseFloat(mblock[1]);
-      var frac = mblock[2];
-      if(frac.length === 1){
-        amt = whole + parseInt(frac)/10;  // 9块9 → 9.9
-      } else if(frac.length === 2){
-        amt = whole + parseInt(frac)/100; // 8块72 → 8.72
-      }
-    }
+    if(mblock){ var whole = parseFloat(mblock[1]); var frac = mblock[2]; if(frac.length === 1) amt = whole + parseInt(frac)/10; else if(frac.length === 2) amt = whole + parseInt(frac)/100; }
   }
 
-  // 7. 整数+单位 "25元" "12块" "5块钱" （排除已被小数吃掉的部分）
+  // 8. 整数+单位
   if(amt === 0){
-    // 先检查是否有"X块Y"模式（如"9块9"），避免只拿到X
-    var m6block = text.match(/(\d+(?:\.\d+)?)\s*块\s*(\d+)/);
-    if(m6block){
-      // 已经有6b处理过了，这里不再重复
-    } else {
-      var m6 = text.match(/(\d+)\s*(块钱|元|块)/);
-      if(m6) amt = parseFloat(m6[1]);
-    }
+    var m6 = text.match(/(\d+)\s*(块钱|元|块)/);
+    if(m6) amt = parseFloat(m6[1]);
   }
 
-  // 8. 纯数字兜底（仅当上面所有规则都没匹配时才用）
+  // 9. 纯数字兜底
   if(amt === 0){
     var m7 = text.match(/(\d+(?:\.\d+)?)/);
-    if(m7){
-      // 检查这个数字是整个句子的"主要金额"还是某个词的一部分
-      var numStr = m7[1];
-      var before = text.substring(0, text.indexOf(numStr));
-      var after = text.substring(text.indexOf(numStr) + numStr.length);
-      // 如果数字前后都有文字，且数字很小（可能是年份/编号），跳过
-      if(before.length > 0 && after.length > 1){
-        amt = 0; // 不作为独立金额
-      } else {
-        amt = parseFloat(numStr);
-      }
-    }
+    if(m7){ var numStr = m7[1]; var before = text.substring(0, text.indexOf(numStr)); var after = text.substring(text.indexOf(numStr) + numStr.length); if(before.length > 0 && after.length > 1) amt = 0; else amt = parseFloat(numStr); }
   }
 
   result.amount = amt;
 
-  // === 类型判断 ===
-  // 攒钱关键词
-  var saveKw = ['攒','存','存款','存入','定投','储蓄','攒钱','存钱','攒了','存了','攒了','存了'];
-  for(var si = 0; si < saveKw.length; si++){
-    if(t.indexOf(saveKw[si]) >= 0){ result.type = 'save'; break; }
-  }
-
-  // 收入关键词
+  // 类型判断
+  var saveKw = ['攒','存','存款','存入','定投','储蓄','攒钱','存钱','攒了','存了'];
+  for(var si = 0; si < saveKw.length; si++){ if(t.indexOf(saveKw[si]) >= 0){ result.type = 'save'; break; } }
   if(result.type !== 'save'){
     var inkw = ['工资','收入','到账','赚了','奖金','分红','兼职','稿费','红包','收了','发了','发工资','赚到','提成','利息','收益','理财','退款','报销'];
-    for(var j = 0; j < inkw.length; j++){
-      if(t.indexOf(inkw[j]) >= 0){ result.type = 'income'; break; }
-    }
+    for(var j = 0; j < inkw.length; j++){ if(t.indexOf(inkw[j]) >= 0){ result.type = 'income'; break; } }
   }
 
-  // === 分类规则 ===
+  // 分类规则
   var rules = [
     {cat:'餐饮',emo:'🍜',kw:['吃','饭','午餐','晚饭','早餐','外卖','奶茶','咖啡','火锅','烧烤','面条','米饭','菜','食堂','零食','水果','下午茶','早点','宵夜','餐','酸奶','布丁','麻薯','水']},
-    {cat:'交通',emo:'🚌',kw:['地铁','公交','打车','出租车','滴滴','油费','停车','高铁','火车','机票','加油','车费','过路费','坐地铁','坐公交','交费','交通','交了','交的']},
+    {cat:'交通',emo:'🚌',kw:['地铁','公交','打车','出租车','滴滴','油费','停车','高铁','火车','机票','加油','车费','过路费','坐地铁','坐公交','交通']},
     {cat:'购物',emo:'🛍️',kw:['买','购','淘宝','京东','拼多多','超市','商场','日用品','家居','护肤品']},
-    {cat:'服饰',emo:'👕',kw:['衣服','裤子','鞋子','T恤','衬衫','外套','包包','围巾','袜子','鞋']},
-    {cat:'娱乐',emo:'🎮',kw:['电影','游戏','视频','音乐','ktv','唱歌','旅游','景点','门票','健身','运动','打球']},
+    {cat:'服饰',emo:'👕',kw:['衣服','裤子','鞋子','T恤','衬衫','外套','包包','围巾','袜子']},
+    {cat:'娱乐',emo:'🎮',kw:['电影','游戏','视频','音乐','ktv','唱歌','旅游','景点','门票','健身','运动']},
     {cat:'居住',emo:'🏠',kw:['房租','水电','物业','网费','宽带','维修','装修','家具']},
     {cat:'医疗',emo:'💊',kw:['药','医院','诊所','体检','牙医','感冒','发烧','看病']},
     {cat:'教育',emo:'📚',kw:['书','课程','培训','学费','考试','学习','网课','补习']},
@@ -678,51 +565,37 @@ function parseSingle(text){
     {cat:'宠物',emo:'🐱',kw:['猫','狗','宠物','猫粮','狗粮','猫砂']},
     {cat:'工资',emo:'💰',kw:['工资','月薪','薪水']},
     {cat:'奖金',emo:'🎁',kw:['奖金','年终奖','提成']},
-    {cat:'投资',emo:'📈',kw:['理财','基金','股票','收益','利息']},
+    {cat:'投资',emo:'📈',kw:['理财','基金','股票','收益']},
     {cat:'兼职',emo:'💼',kw:['兼职','副业']},
     {cat:'红包',emo:'🧧',kw:['红包','压岁钱']},
     {cat:'攒钱',emo:'🐷',kw:['攒','存','存款','存入','定投','储蓄']}
   ];
-
   for(var k = 0; k < rules.length; k++){
     for(var w = 0; w < rules[k].kw.length; w++){
-      if(t.indexOf(rules[k].kw[w]) >= 0){
-        result.cat = rules[k].cat;
-        result.catEmo = rules[k].emo;
-        break;
-      }
+      if(t.indexOf(rules[k].kw[w]) >= 0){ result.cat = rules[k].cat; result.catEmo = rules[k].emo; break; }
     }
     if(result.cat !== '其他') break;
   }
 
-  // === 备注清洗（修复多余条目Bug）===
-  var note = text
-    .replace(/(\d+(\.\d+)?)\s*(块钱|元|块|万|w|毛|角)?/g, ' ')
-    .replace(/花了|花了|了|今天|昨天|早上|中午|晚上|下午|我|去|了|一笔|钱|坐|打|乘了|搭了|费|交|攒|存|存入|买|吃/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // 清洗后如果只剩"支出""收入""攒钱"等无意义词，直接清空
+  // 备注清洗
+  var note = text.replace(/(\d+(\.\d+)?)\s*(块钱|元|块|万|w|毛|角)?/g, ' ').replace(/花了|今天|昨天|早上|中午|晚上|下午|我|去|了|一笔|钱|坐|打|乘了|搭了|费|交|攒|存|存入|买|吃/g, ' ').replace(/\s+/g, ' ').trim();
   if(note === '支出' || note === '收入' || note === '攒钱' || note === ''){
     if(result.type === 'income') note = '收入';
     else if(result.type === 'save') note = '攒钱';
     else note = '支出';
-  } else if(note.length > 20){
-    note = note.substring(0, 20);
-  }
-
+  } else if(note.length > 20){ note = note.substring(0, 20); }
   result.note = note;
   return result;
 }
 
 // ===== 交互：识别并预览 =====
 function fillEx(text){
-  document.getElementById('voice-input').value = text;
-  document.getElementById('voice-input').focus();
+  document.getElementById('voiceInput').value = text;
+  document.getElementById('voiceInput').focus();
 }
 
 function parseAndShow(){
-  var text = document.getElementById('voice-input').value.trim();
+  var text = document.getElementById('voiceInput').value.trim();
   if(!text){ toast('⚠️ 请输入内容'); return; }
   var list = parseTextMulti(text);
   if(!list.length){ toast('❌ 没找到金额，试试"午饭花了25元"'); return; }
@@ -750,11 +623,8 @@ function renderPreview(){
 
 function removePending(idx){
   pending.splice(idx, 1);
-  if(pending.length === 0){
-    document.getElementById('previewBox').classList.remove('on');
-  } else {
-    renderPreview();
-  }
+  if(pending.length === 0){ document.getElementById('previewBox').classList.remove('on'); }
+  else { renderPreview(); }
 }
 
 function saveAllPending(){
@@ -763,7 +633,7 @@ function saveAllPending(){
   pending.forEach(function(r){
     var now = new Date();
     records.unshift({
-      id: Date.now() + Math.random(),
+      id: genId(),
       desc: r.note,
       amount: r.amount,
       type: r.type,
@@ -772,17 +642,13 @@ function saveAllPending(){
       time: now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
       date: now.toDateString()
     });
-    // 攒钱逻辑
-    if(r.type === 'save'){
-      saveGoal.saved += r.amount;
-    } else if(r.type === 'expense'){
-      saveGoal.saved = Math.max(0, saveGoal.saved - r.amount);
-    }
+    if(r.type === 'save') saveGoal.saved += r.amount;
+    else if(r.type === 'expense') saveGoal.saved = Math.max(0, saveGoal.saved - r.amount);
   });
   save();
   pending = [];
   document.getElementById('previewBox').classList.remove('on');
-  document.getElementById('voice-input').value = '';
+  document.getElementById('voiceInput').value = '';
   render();
   checkBudgetAfterSave();
   checkSaveGoal();
@@ -824,15 +690,8 @@ function saveEditPending(){
   var co = CATS[mType].find(function(c){ return c.n === mCat; }) || CATS[mType][CATS[mType].length - 1];
   pending[editingIdx].catEmo = co.o;
   editingIdx++;
-  if(editingIdx < pending.length){
-    showEditPending();
-    toast('✅ 第' + editingIdx + '条已更新');
-  } else {
-    editingIdx = -1;
-    closeEditModal();
-    renderPreview();
-    toast('✅ 全部修改完成');
-  }
+  if(editingIdx < pending.length){ showEditPending(); toast('✅ 第' + editingIdx + '条已更新'); }
+  else { editingIdx = -1; closeEditModal(); renderPreview(); toast('✅ 全部修改完成'); }
 }
 
 // ===== 编辑单条记录 =====
@@ -859,7 +718,6 @@ function saveEditSingle(){
   if(!mCat){ toast('⚠️ 请选择分类'); return; }
   var co = CATS[mType].find(function(c){ return c.n === mCat; }) || CATS[mType][CATS[mType].length - 1];
 
-  // 调整攒钱：先回退旧值，再加新值
   if(rec.type === 'save') saveGoal.saved = Math.max(0, saveGoal.saved - rec.amount);
   if(rec.type === 'expense') saveGoal.saved = Math.max(0, saveGoal.saved + rec.amount);
   if(mType === 'save') saveGoal.saved += a;
@@ -869,19 +727,7 @@ function saveEditSingle(){
   save(); editingId = null; closeEditModal(); render(); checkSaveGoal(); toast('✅ 已更新');
 }
 
-// ===== 新增 =====
-function openNew(){
-  editingId = null; mType = 'expense'; mCat = '';
-  document.getElementById('sheetTitle').textContent = '✏️ 记一笔';
-  document.getElementById('sheetSub').textContent = '手动输入金额和分类';
-  document.getElementById('saveBtn').textContent = '保存';
-  document.getElementById('saveBtn').onclick = saveNew;
-  document.getElementById('mAmt').value = '';
-  document.getElementById('mNote').value = '';
-  renderMCats();
-  openEditModal();
-}
-
+// ===== 新增（由编辑弹窗保存按钮复用）=====
 function saveNew(){
   var a = parseFloat(document.getElementById('mAmt').value);
   var note = document.getElementById('mNote').value.trim();
@@ -890,7 +736,7 @@ function saveNew(){
   var co = CATS[mType].find(function(c){ return c.n === mCat; }) || CATS[mType][CATS[mType].length - 1];
   var now = new Date();
   records.unshift({
-    id: Date.now() + Math.random(),
+    id: genId(),
     desc: note || (mType === 'income' ? '收入' : mType === 'save' ? '攒钱' : '支出'),
     amount: a,
     type: mType,
@@ -905,12 +751,13 @@ function saveNew(){
   toast('✅ 已保存 ' + co.o + ' ¥' + a.toFixed(2));
 }
 
-// ===== 删除 =====
+// ===== 删除（核心修复：事件委托 + data-id）=====
 function askDelete(id){
   var rec = records.find(function(x){ return x.id === id; });
   if(!rec) return;
   document.getElementById('confirmSub').textContent = (rec.catEmo || '') + ' ' + rec.cat + ' ¥' + rec.amount.toFixed(2);
-  document.getElementById('confirmDelBtn').onclick = function(){ doDelete(id); };
+  var btn = document.getElementById('confirmDelBtn');
+  btn.onclick = function(){ doDelete(id); };
   document.getElementById('confirmOverlay').classList.add('on');
 }
 
@@ -921,7 +768,7 @@ function doDelete(id){
     if(rec.type === 'expense') saveGoal.saved += rec.amount;
   }
   records = records.filter(function(x){ return x.id !== id; });
-  save(); closeConfirm(); render(); checkSaveGoal(); toast('🗑️ 已删除');
+  save(); closeConfirm(); render(); checkSaveGoal(); toast('🗑️ 已删除 1 条记录');
 }
 
 // ===== 攒钱目标 =====
@@ -955,13 +802,8 @@ function renderSaveGoal(){
     fill.style.width = pct + '%';
     fill.className = 'save-progress-fill' + (pct >= 100 ? ' full' : '');
     var rem = document.getElementById('saveRemaining');
-    if(pct >= 100){
-      rem.textContent = '🎊 目标已达成！';
-      rem.className = 'remaining zero';
-    } else {
-      rem.textContent = '还差 ¥' + (saveGoal.target - saveGoal.saved).toFixed(2);
-      rem.className = 'remaining';
-    }
+    if(pct >= 100){ rem.textContent = '🎊 目标已达成！'; rem.className = 'remaining zero'; }
+    else { rem.textContent = '还差 ¥' + (saveGoal.target - saveGoal.saved).toFixed(2); rem.className = 'remaining'; }
     info.innerHTML = '🐷 当前目标：攒 ¥' + saveGoal.target.toFixed(0) + ' | 已攒 ¥' + saveGoal.saved.toFixed(2) + ' (' + pct.toFixed(1) + '%)';
   } else {
     wrap.style.display = 'none';
@@ -975,12 +817,10 @@ function checkSaveGoal(){
     var pct = saveGoal.saved / saveGoal.target;
     var key = 'save_' + Math.floor(Date.now() / 86400000);
     if(pct >= 1 && !alerted[key + '_done']){
-      alerted[key + '_done'] = true;
-      localStorage.setItem('alerted', JSON.stringify(alerted));
+      alerted[key + '_done'] = true; localStorage.setItem('alerted', JSON.stringify(alerted));
       showAlert('🎊', '恭喜！攒钱目标达成！', '你已成功攒够 ¥' + saveGoal.target.toFixed(2) + '！\n太棒了，继续加油！');
     } else if(pct >= 0.8 && !alerted[key + '_80']){
-      alerted[key + '_80'] = true;
-      localStorage.setItem('alerted', JSON.stringify(alerted));
+      alerted[key + '_80'] = true; localStorage.setItem('alerted', JSON.stringify(alerted));
       showAlert('🎉', '快达成目标了！', '已攒 ¥' + saveGoal.saved.toFixed(2) + '\n距离目标仅差 ¥' + (saveGoal.target - saveGoal.saved).toFixed(2) + '\n加油！');
     }
   }
@@ -1090,7 +930,7 @@ function save(){
   localStorage.setItem('save_goal', JSON.stringify(saveGoal));
 }
 
-// ===== 渲染主列表 =====
+// ===== 渲染主列表（事件委托）=====
 function render(){
   ensureDateField();
   updateTotals();
@@ -1102,15 +942,22 @@ function render(){
 
 function updateTotals(){
   var now = new Date();
-  var monthRecs = records.filter(function(x){
-    var d = new Date(x.date || 0);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  });
-  var inc = monthRecs.filter(function(x){ return x.type === 'income'; }).reduce(function(s,x){ return s + x.amount; }, 0);
-  var exp = monthRecs.filter(function(x){ return x.type === 'expense'; }).reduce(function(s,x){ return s + x.amount; }, 0);
-  document.getElementById('header-inc').textContent = fmt(inc);
-  document.getElementById('header-exp').textContent = fmt(exp);
-  document.getElementById('total-amount').textContent = fmt(inc - exp);
+  var recs;
+  if(headerPeriod === 'month'){
+    recs = records.filter(function(x){
+      var d = new Date(x.date || 0);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+  } else {
+    var today = now.toDateString();
+    recs = records.filter(function(x){ return (x.date || '') === today; });
+  }
+  var inc = recs.filter(function(x){ return x.type === 'income'; }).reduce(function(s,x){ return s + x.amount; }, 0);
+  var exp = recs.filter(function(x){ return x.type === 'expense'; }).reduce(function(s,x){ return s + x.amount; }, 0);
+  document.getElementById('headerInc').textContent = fmt(inc);
+  document.getElementById('headerExp').textContent = fmt(exp);
+  document.getElementById('totalAmount').textContent = fmt(inc - exp);
+  document.getElementById('totalLabel').textContent = headerPeriod === 'month' ? '本月结余' : '今日结余';
 }
 
 function updateBudgetBar(){
@@ -1139,31 +986,46 @@ function updateBudgetBar(){
 
 function renderList(){
   var list = getFiltered();
-  var el = document.getElementById('record-list');
-  var empty = document.getElementById('empty-state');
+  var el = document.getElementById('recordList');
+  var empty = document.getElementById('emptyState');
   el.innerHTML = '';
   if(list.length === 0){ empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   list.forEach(function(x){
     var li = document.createElement('li');
     li.className = 'record-item';
+    li.setAttribute('data-id', x.id);
     var typeIcon = x.type === 'income' ? '⬆️' : x.type === 'save' ? '🐷' : '⬇️';
     var amtClass = x.type === 'income' ? 'amount-income' : x.type === 'save' ? 'amount-save' : 'amount-expense';
     li.innerHTML =
-      '<div class="record-info" onclick="editRecord(\'' + x.id + '\')">' +
+      '<div class="record-info">' +
         '<div class="record-desc">' + (x.catEmo || '📦') + ' ' + esc(x.desc) + '</div>' +
         '<div class="record-time">' + esc(x.cat) + ' · ' + esc(x.time || '') + '</div>' +
       '</div>' +
       '<div style="display:flex;align-items:center">' +
         '<div class="record-amount ' + amtClass + '">' + typeIcon + ' ' + (x.type === 'income' ? '+' : x.type === 'save' ? '🐷' : '-') + '¥' + fmt(x.amount) + '</div>' +
         '<div class="record-actions">' +
-          '<button class="act-btn" onclick="editRecord(\'' + x.id + '\')">✏️</button>' +
-          '<button class="act-btn" onclick="askDelete(\'' + x.id + '\')">🗑️</button>' +
+          '<button class="act-btn" data-id="' + x.id + '" data-action="edit" title="编辑">✏️</button>' +
+          '<button class="act-btn" data-id="' + x.id + '" data-action="delete" title="删除">🗑️</button>' +
         '</div>' +
       '</div>';
     el.appendChild(li);
   });
 }
+
+// 事件委托：点击列表项时根据 data-action 分发
+document.getElementById('recordList').addEventListener('click', function(e){
+  var btn = e.target.closest('.act-btn');
+  if(!btn){
+    var item = e.target.closest('.record-item');
+    if(item && item.dataset.id) editRecord(item.dataset.id);
+    return;
+  }
+  var id = btn.dataset.id;
+  var action = btn.dataset.action;
+  if(action === 'edit') editRecord(id);
+  else if(action === 'delete') askDelete(id);
+});
 
 function getFiltered(){
   var list = records.slice();
@@ -1199,16 +1061,15 @@ function renderStats(){
   });
   var inc = mr.filter(function(x){ return x.type === 'income'; }).reduce(function(s,x){ return s + x.amount; }, 0);
   var exp = mr.filter(function(x){ return x.type === 'expense'; }).reduce(function(s,x){ return s + x.amount; }, 0);
-  var save = mr.filter(function(x){ return x.type === 'save'; }).reduce(function(s,x){ return s + x.amount; }, 0);
-  document.getElementById('stat-inc').textContent = '¥' + fmt(inc);
-  document.getElementById('stat-exp').textContent = '¥' + fmt(exp);
-  document.getElementById('stat-bal').textContent = '¥' + fmt(inc - exp);
-  document.getElementById('stat-saved').textContent = '¥' + fmt(saveGoal.saved);
-  document.getElementById('stat-cnt').textContent = mr.length;
+  var saveTot = mr.filter(function(x){ return x.type === 'save'; }).reduce(function(s,x){ return s + x.amount; }, 0);
+  document.getElementById('statInc').textContent = '¥' + fmt(inc);
+  document.getElementById('statExp').textContent = '¥' + fmt(exp);
+  document.getElementById('statBal').textContent = '¥' + fmt(inc - exp);
+  document.getElementById('statSaved').textContent = '¥' + fmt(saveGoal.saved);
+  document.getElementById('statCnt').textContent = mr.length;
   var savePct = saveGoal.target > 0 ? Math.min(saveGoal.saved / saveGoal.target * 100, 100) : 0;
-  document.getElementById('stat-save-pct').textContent = savePct.toFixed(0) + '%';
+  document.getElementById('statSavePct').textContent = savePct.toFixed(0) + '%';
 
-  // 7天趋势
   var days = ['日','一','二','三','四','五','六'];
   var chartHtml = ''; var mx = 0;
   var dayData = [];
@@ -1235,7 +1096,6 @@ function renderStats(){
   });
   document.getElementById('trendChart').innerHTML = chartHtml;
 
-  // 分类条
   var me = records.filter(function(x){
     var d = new Date(x.date || 0);
     return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && x.type === 'expense';
@@ -1264,9 +1124,9 @@ function onSearch(q){ searchQ = q.trim(); renderList(); }
 
 // ===== 标签切换 =====
 function switchTab(tab, el){
-  document.getElementById('main-view').style.display = tab === 'main' ? 'block' : 'none';
-  document.getElementById('stats-view').style.display = tab === 'stats' ? 'block' : 'none';
-  document.getElementById('settings-view').style.display = tab === 'settings' ? 'block' : 'none';
+  document.getElementById('mainView').style.display = tab === 'main' ? 'block' : 'none';
+  document.getElementById('statsView').style.display = tab === 'stats' ? 'block' : 'none';
+  document.getElementById('settingsView').style.display = tab === 'settings' ? 'block' : 'none';
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
   if(el) el.classList.add('active');
   if(tab === 'stats') render();
@@ -1311,7 +1171,7 @@ function clearAllData(){
 }
 
 // ===== 回车快捷 =====
-document.getElementById('voice-input').addEventListener('keydown', function(e){
+document.getElementById('voiceInput').addEventListener('keydown', function(e){
   if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); parseAndShow(); }
 });
 </script>
