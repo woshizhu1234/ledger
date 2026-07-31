@@ -88,7 +88,7 @@ textarea:focus{border-color:var(--primary)}
 .amount-expense{color:var(--danger)}
 .amount-save{color:var(--save-color)}
 .record-actions{display:flex;gap:2px}
-.act-btn{width:36px;height:36px;border:none;background:transparent;font-size:18px;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.act-btn{width:36px;height:36px;border:none;background:transparent;font-size:18px;cursor:pointer;border-radius:8px;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;appearance:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .act-btn:active{background:#f0f0f5;transform:scale(.85)}
 .search-wrap{position:relative;padding:0 15px 10px}
 .search-input{width:100%;padding:9px 12px 9px 36px;border:1.5px solid #e0e6ed;border-radius:10px;font-size:14px;outline:none;background:#fff}
@@ -357,7 +357,7 @@ textarea:focus{border-color:var(--primary)}
     <div class="confirm-sub" id="confirmSub"></div>
     <div class="confirm-actions">
       <button class="btn-cancel" onclick="closeConfirm()">取消</button>
-      <button class="btn-danger" id="confirmDelBtn">删除</button>
+      <button class="btn-danger" id="confirmDelBtn" onclick="doDelete()">删除</button>
     </div>
   </div>
 </div>
@@ -752,22 +752,25 @@ function saveNew(){
 }
 
 // ===== 删除（核心修复：事件委托 + data-id）=====
+var curDelId = null;
 function askDelete(id){
   var rec = records.find(function(x){ return x.id === id; });
   if(!rec) return;
+  curDelId = id;
   document.getElementById('confirmSub').textContent = (rec.catEmo || '') + ' ' + rec.cat + ' ¥' + rec.amount.toFixed(2);
-  var btn = document.getElementById('confirmDelBtn');
-  btn.onclick = function(){ doDelete(id); };
   document.getElementById('confirmOverlay').classList.add('on');
 }
 
-function doDelete(id){
+function doDelete(){
+  var id = curDelId;
+  if(!id) return;
   var rec = records.find(function(x){ return x.id === id; });
   if(rec){
     if(rec.type === 'save') saveGoal.saved = Math.max(0, saveGoal.saved - rec.amount);
     if(rec.type === 'expense') saveGoal.saved += rec.amount;
   }
   records = records.filter(function(x){ return x.id !== id; });
+  curDelId = null;
   save(); closeConfirm(); render(); checkSaveGoal(); toast('🗑️ 已删除 1 条记录');
 }
 
@@ -1005,26 +1008,19 @@ function renderList(){
       '<div style="display:flex;align-items:center">' +
         '<div class="record-amount ' + amtClass + '">' + typeIcon + ' ' + (x.type === 'income' ? '+' : x.type === 'save' ? '🐷' : '-') + '¥' + fmt(x.amount) + '</div>' +
         '<div class="record-actions">' +
-          '<button class="act-btn" data-id="' + x.id + '" data-action="edit" title="编辑">✏️</button>' +
-          '<button class="act-btn" data-id="' + x.id + '" data-action="delete" title="删除">🗑️</button>' +
+          '<button class="act-btn" data-id="' + x.id + '" data-action="edit" title="编辑" onclick="editRecord(\'' + x.id + '\')">✏️</button>' +
+          '<button class="act-btn" data-id="' + x.id + '" data-action="delete" title="删除" onclick="askDelete(\'' + x.id + '\')">🗑️</button>' +
         '</div>' +
       '</div>';
     el.appendChild(li);
   });
 }
 
-// 事件委托：点击列表项时根据 data-action 分发
+// 事件委托：点击列表项空白处时进入编辑（删除/编辑按钮已用内联 onclick 处理，避免双重触发）
 document.getElementById('recordList').addEventListener('click', function(e){
-  var btn = e.target.closest('.act-btn');
-  if(!btn){
-    var item = e.target.closest('.record-item');
-    if(item && item.dataset.id) editRecord(item.dataset.id);
-    return;
-  }
-  var id = btn.dataset.id;
-  var action = btn.dataset.action;
-  if(action === 'edit') editRecord(id);
-  else if(action === 'delete') askDelete(id);
+  if(e.target.closest('.act-btn')) return;
+  var item = e.target.closest('.record-item');
+  if(item && item.dataset.id) editRecord(item.dataset.id);
 });
 
 function getFiltered(){
