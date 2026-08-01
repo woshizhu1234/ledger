@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="智能记账本">
+<meta name="theme-color" content="#4a90e2">
 <title>智能记账本</title>
 <style>
 :root {
@@ -308,8 +312,11 @@ textarea:focus{border-color:var(--primary)}
     <button class="btn-primary" onclick="saveBudget()" style="margin-top:0">💾 保存预算</button>
   </div>
   <div class="quick-input">
+    <button onclick="exportBackup()" style="width:100%;padding:12px;background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">💾 完整备份</button>
+    <button onclick="document.getElementById('importFile').click()" style="width:100%;padding:12px;background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">📥 导入数据</button>
     <button onclick="exportCSV()" style="width:100%;padding:12px;background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">📤 导出 CSV</button>
     <button onclick="clearAllData()" style="width:100%;padding:12px;background:var(--danger);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">🗑️ 清空所有数据</button>
+    <input type="file" id="importFile" accept=".csv,.json" style="display:none">
   </div>
 </div>
 
@@ -369,6 +376,19 @@ textarea:focus{border-color:var(--primary)}
     <div class="alert-title" id="alertTitle">提醒</div>
     <div class="alert-msg" id="alertMsg"></div>
     <button class="btn-save" style="width:100%" onclick="closeAlert()">我知道了</button>
+  </div>
+</div>
+
+<!-- 通用确认弹窗（替代 window.confirm，确保手机 WebView 中可用） -->
+<div class="modal-overlay" id="genConfirmOverlay" style="align-items:center">
+  <div class="confirm-box">
+    <div class="confirm-emoji">❓</div>
+    <div class="confirm-text" id="genConfirmText">确定吗？</div>
+    <div class="confirm-sub" id="genConfirmSub"></div>
+    <div class="confirm-actions">
+      <button class="btn-cancel" id="genConfirmCancel">取消</button>
+      <button class="btn-danger" id="genConfirmOk">确定</button>
+    </div>
   </div>
 </div>
 
@@ -786,11 +806,12 @@ function saveGoalFn(){
 }
 
 function clearSaveGoal(){
-  if(!confirm('确定清除攒钱目标吗？已攒金额会保留。')) return;
-  saveGoal.target = 0;
-  localStorage.setItem('save_goal', JSON.stringify(saveGoal));
-  renderSaveGoal();
-  toast('🗑️ 已清除攒钱目标');
+  appConfirm('确定清除攒钱目标吗？已攒金额会保留。', function(){
+    saveGoal.target = 0;
+    localStorage.setItem('save_goal', JSON.stringify(saveGoal));
+    renderSaveGoal();
+    toast('🗑️ 已清除攒钱目标');
+  });
 }
 
 function renderSaveGoal(){
@@ -902,6 +923,18 @@ function showAlert(emoji, title, msg){
   document.getElementById('alertOverlay').classList.add('on');
 }
 function closeAlert(){ document.getElementById('alertOverlay').classList.remove('on'); }
+
+// ===== 通用确认弹窗 =====
+var genConfirmCb = null;
+function appConfirm(text, cb){
+  document.getElementById('genConfirmText').textContent = text;
+  genConfirmCb = cb;
+  document.getElementById('genConfirmOverlay').classList.add('on');
+}
+function closeGenConfirm(){ document.getElementById('genConfirmOverlay').classList.remove('on'); genConfirmCb = null; }
+document.getElementById('genConfirmOverlay').addEventListener('click', function(e){ if(e.target === this) closeGenConfirm(); });
+document.getElementById('genConfirmCancel').onclick = closeGenConfirm;
+document.getElementById('genConfirmOk').onclick = function(){ var cb = genConfirmCb; closeGenConfirm(); if(cb) cb(); };
 
 document.getElementById('editModal').addEventListener('click', function(e){ if(e.target === this) closeEditModal(); });
 document.getElementById('confirmOverlay').addEventListener('click', function(e){ if(e.target === this) closeConfirm(); });
@@ -1159,11 +1192,108 @@ function exportCSV(){
   toast('✅ 已导出CSV');
 }
 
+// ===== 完整备份（JSON，无损：含日期/图标/预算/目标）=====
+function exportBackup(){
+  if(!records.length){ toast('📭 暂无数据'); return; }
+  var data = { app:'smart-ledger', v:1, records: records, budget: budget, saveGoal: saveGoal };
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = '记账备份_' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ 已生成完整备份');
+}
+
+// ===== 导入数据（支持 CSV 与 JSON 备份）=====
+document.getElementById('importFile').addEventListener('change', function(e){
+  var f = e.target.files[0];
+  if(!f) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      if(f.name.toLowerCase().endsWith('.json')) importJSON(String(reader.result));
+      else importCSV(String(reader.result));
+    }catch(err){ toast('❌ 导入失败：' + err.message); }
+    e.target.value = '';
+  };
+  reader.readAsText(f, 'utf-8');
+});
+
+function importJSON(text){
+  var data = JSON.parse(text);
+  var imported = data.records || (Array.isArray(data) ? data : []);
+  if(!imported.length){ toast('📭 备份里没有记录'); return; }
+  if(data.budget){ budget = data.budget; localStorage.setItem('budget_cfg', JSON.stringify(budget)); }
+  if(data.saveGoal){ saveGoal = data.saveGoal; }
+  var list = imported.map(function(r){
+    return {
+      id: genId(),
+      type: r.type || 'expense',
+      amount: parseFloat(r.amount) || 0,
+      cat: r.cat || '其他',
+      desc: r.desc || '',
+      catEmo: r.catEmo || '📦',
+      time: r.time || new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
+      date: r.date || new Date().toDateString()
+    };
+  }).filter(function(r){ return r.amount > 0; });
+  mergeRecords(list);
+  toast('✅ 已导入 ' + list.length + ' 条（JSON 完整备份，日期保留）');
+}
+
+function importCSV(text){
+  text = text.replace(/^﻿/, '');
+  var lines = text.split(/\r?\n/).filter(function(l){ return l.trim() !== ''; });
+  if(lines.length < 2){ toast('📭 CSV 没有数据行'); return; }
+  var out = [];
+  for(var i = 1; i < lines.length; i++){
+    var cols = parseCsvLine(lines[i]);
+    if(cols.length < 4) continue;
+    var type = cols[0].trim();
+    type = type === '收入' ? 'income' : type === '攒钱' ? 'save' : 'expense';
+    var amount = parseFloat(cols[1]);
+    if(!(amount > 0)) continue;
+    out.push({
+      id: genId(),
+      type: type,
+      amount: amount,
+      cat: cols[2].trim() || '其他',
+      desc: (cols[3] || '').trim(),
+      catEmo: '📦',
+      time: cols[4] ? cols[4].trim() : new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
+      date: new Date().toDateString()
+    });
+  }
+  if(!out.length){ toast('❌ 未解析到有效记录'); return; }
+  mergeRecords(out);
+  toast('✅ 已导入 ' + out.length + ' 条（CSV，日期记为今天）');
+}
+
+function parseCsvLine(line){
+  var res = [], cur = '', q = false;
+  for(var i = 0; i < line.length; i++){
+    var c = line.charAt(i);
+    if(c === '"'){ if(q && line.charAt(i+1) === '"'){ cur += '"'; i++; } else { q = !q; } }
+    else if(c === ',' && !q){ res.push(cur); cur = ''; }
+    else cur += c;
+  }
+  res.push(cur);
+  return res;
+}
+
+function mergeRecords(list){
+  records = records.concat(list);
+  ensureDateField();
+  save();
+  render();
+  updateTotals();
+}
+
 // ===== 清空 =====
 function clearAllData(){
-  if(confirm('确定清空所有数据吗？此操作不可恢复！')){
+  appConfirm('确定清空所有数据吗？此操作不可恢复！', function(){
     records = []; saveGoal.saved = 0; save(); render(); toast('🗑️ 已清空所有数据');
-  }
+  });
 }
 
 // ===== 回车快捷 =====
