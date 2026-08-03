@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="智能记账本">
 <meta name="theme-color" content="#4a90e2">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>智能记账本</title>
 <style>
 :root {
@@ -87,6 +89,7 @@ textarea:focus{border-color:var(--primary)}
 .record-info{flex:1;cursor:pointer;min-width:0}
 .record-desc{font-size:15px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .record-time{font-size:12px;color:var(--gray)}
+.record-remark{font-size:12px;color:var(--primary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
 .record-amount{font-size:17px;font-weight:700;margin-right:6px;white-space:nowrap}
 .amount-income{color:var(--success)}
 .amount-expense{color:var(--danger)}
@@ -348,7 +351,8 @@ textarea:focus{border-color:var(--primary)}
     </div>
     <input class="amt-input" id="mAmt" type="number" placeholder="0.00" inputmode="decimal" step="0.01" min="0">
     <div class="cat-grid" id="mCatGrid"></div>
-    <input class="note-inp" id="mNote" type="text" placeholder="📝 备注（选填）" autocomplete="off">
+    <input class="note-inp" id="mNote" type="text" placeholder="📝 描述（选填）" autocomplete="off">
+    <input class="note-inp" id="mRemark" type="text" placeholder="💬 备注（选填，额外备注信息）" autocomplete="off">
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeEditModal()">取消</button>
       <button class="btn-save" id="saveBtn" onclick="saveModal()">保存</button>
@@ -507,7 +511,7 @@ function parseTextMulti(text){
 // ===== 单句识别 =====
 function parseSingle(text){
   var t = text.toLowerCase();
-  var result = {type:'expense', amount:0, cat:'其他', catEmo:'📦', note:'', raw:text};
+  var result = {type:'expense', amount:0, cat:'其他', catEmo:'📦', note:'', remark:'', raw:text};
   var amt = 0;
 
   // 1. "X块Y毛/角"
@@ -598,7 +602,7 @@ function parseSingle(text){
   }
 
   // 备注清洗
-  var note = text.replace(/(\d+(\.\d+)?)\s*(块钱|元|块|万|w|毛|角)?/g, ' ').replace(/花了|今天|昨天|早上|中午|晚上|下午|我|去|了|一笔|钱|坐|打|乘了|搭了|费|交|攒|存|存入|买|吃/g, ' ').replace(/\s+/g, ' ').trim();
+  var note = text.replace(/(\d+(\.\d+)?)\s*(块钱|元|块|万|w|毛|角)?/g, ' ').replace(/花了|今天|昨天|早上|中午|晚上|下午|我|去|了|一笔|钱|乘了|搭了|攒|存|存入|买|吃/g, ' ').replace(/\s+/g, ' ').trim();
   if(note === '支出' || note === '收入' || note === '攒钱' || note === ''){
     if(result.type === 'income') note = '收入';
     else if(result.type === 'save') note = '攒钱';
@@ -659,6 +663,7 @@ function saveAllPending(){
       type: r.type,
       cat: r.cat,
       catEmo: r.catEmo,
+      remark: r.remark || '',
       time: now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
       date: now.toDateString()
     });
@@ -692,6 +697,7 @@ function showEditPending(){
   document.getElementById('saveBtn').onclick = saveEditPending;
   document.getElementById('mAmt').value = r.amount;
   document.getElementById('mNote').value = r.note;
+  document.getElementById('mRemark').value = r.remark || '';
   renderMCats();
   document.getElementById('previewBox').classList.remove('on');
   openEditModal();
@@ -707,6 +713,7 @@ function saveEditPending(){
   pending[editingIdx].cat = mCat;
   pending[editingIdx].note = note || (mType === 'income' ? '收入' : mType === 'save' ? '攒钱' : '支出');
   pending[editingIdx].type = mType;
+  pending[editingIdx].remark = document.getElementById('mRemark').value.trim();
   var co = CATS[mType].find(function(c){ return c.n === mCat; }) || CATS[mType][CATS[mType].length - 1];
   pending[editingIdx].catEmo = co.o;
   editingIdx++;
@@ -725,6 +732,7 @@ function editRecord(id){
   document.getElementById('saveBtn').onclick = saveEditSingle;
   document.getElementById('mAmt').value = rec.amount;
   document.getElementById('mNote').value = rec.desc;
+  document.getElementById('mRemark').value = rec.remark || '';
   renderMCats();
   openEditModal();
 }
@@ -743,7 +751,7 @@ function saveEditSingle(){
   if(mType === 'save') saveGoal.saved += a;
   if(mType === 'expense') saveGoal.saved = Math.max(0, saveGoal.saved - a);
 
-  rec.type = mType; rec.amount = a; rec.cat = mCat; rec.desc = note || (mType === 'income' ? '收入' : mType === 'save' ? '攒钱' : '支出'); rec.catEmo = co.o;
+  rec.type = mType; rec.amount = a; rec.cat = mCat; rec.desc = note || (mType === 'income' ? '收入' : mType === 'save' ? '攒钱' : '支出'); rec.catEmo = co.o; rec.remark = document.getElementById('mRemark').value.trim();
   save(); editingId = null; closeEditModal(); render(); checkSaveGoal(); toast('✅ 已更新');
 }
 
@@ -762,6 +770,7 @@ function saveNew(){
     type: mType,
     cat: mCat,
     catEmo: co.o,
+    remark: document.getElementById('mRemark').value.trim(),
     time: now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
     date: now.toDateString()
   });
@@ -1033,10 +1042,15 @@ function renderList(){
     li.setAttribute('data-id', x.id);
     var typeIcon = x.type === 'income' ? '⬆️' : x.type === 'save' ? '🐷' : '⬇️';
     var amtClass = x.type === 'income' ? 'amount-income' : x.type === 'save' ? 'amount-save' : 'amount-expense';
+    var remarkHtml = (x.remark && x.remark.trim()) ? '<div class="record-remark">📝 ' + esc(x.remark) + '</div>' : '';
+    // 清洗描述：去掉开头的金额前缀（如"四块"、"5元"、"两块五"等）
+    var cleanDesc = (x.desc || '').replace(/^[一二三四五六七八九十百千万两\d]+(\.\d+)?\s*(块钱|元|块|毛|角)?\s*/, '').replace(/^\s*[⬇️⬆️🐷]\s*/, '').trim() || x.desc || '';
+    
     li.innerHTML =
       '<div class="record-info">' +
-        '<div class="record-desc">' + (x.catEmo || '📦') + ' ' + esc(x.desc) + '</div>' +
+        '<div class="record-desc">' + (x.catEmo || '📦') + ' ' + esc(cleanDesc) + '</div>' +
         '<div class="record-time">' + esc(x.cat) + ' · ' + esc(x.time || '') + '</div>' +
+        remarkHtml +
       '</div>' +
       '<div style="display:flex;align-items:center">' +
         '<div class="record-amount ' + amtClass + '">' + typeIcon + ' ' + (x.type === 'income' ? '+' : x.type === 'save' ? '🐷' : '-') + '¥' + fmt(x.amount) + '</div>' +
@@ -1179,10 +1193,10 @@ function toast(msg){
 // ===== 导出CSV =====
 function exportCSV(){
   if(!records.length){ toast('📭 暂无数据'); return; }
-  var csv = '﻿类型,金额,分类,备注,时间\n';
+  var csv = '﻿类型,金额,分类,描述,备注,时间\n';
   records.forEach(function(x){
     var type = x.type === 'income' ? '收入' : x.type === 'save' ? '攒钱' : '支出';
-    csv += type + ',' + x.amount + ',' + x.cat + ',"' + x.desc + '",' + x.time + '\n';
+    csv += type + ',' + x.amount + ',' + x.cat + ',"' + (x.desc || '') + '","' + (x.remark || '') + '",' + x.time + '\n';
   });
   var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
   var url = URL.createObjectURL(blob);
@@ -1232,6 +1246,7 @@ function importJSON(text){
       amount: parseFloat(r.amount) || 0,
       cat: r.cat || '其他',
       desc: r.desc || '',
+      remark: r.remark || '',
       catEmo: r.catEmo || '📦',
       time: r.time || new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
       date: r.date || new Date().toDateString()
@@ -1259,8 +1274,9 @@ function importCSV(text){
       amount: amount,
       cat: cols[2].trim() || '其他',
       desc: (cols[3] || '').trim(),
+      remark: (cols[4] || '').trim(),
       catEmo: '📦',
-      time: cols[4] ? cols[4].trim() : new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
+      time: cols[5] ? cols[5].trim() : new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
       date: new Date().toDateString()
     });
   }
@@ -1300,6 +1316,13 @@ function clearAllData(){
 document.getElementById('voiceInput').addEventListener('keydown', function(e){
   if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); parseAndShow(); }
 });
+
+// ===== PWA：注册 Service Worker（离线可用 / 可安装到主屏）=====
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
 </script>
 </body>
 </html>
