@@ -8,8 +8,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="智能记账本">
 <meta name="theme-color" content="#4a90e2">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-192.png">
 <title>智能记账本</title>
 <style>
 :root {
@@ -89,7 +87,6 @@ textarea:focus{border-color:var(--primary)}
 .record-info{flex:1;cursor:pointer;min-width:0}
 .record-desc{font-size:15px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .record-time{font-size:12px;color:var(--gray)}
-.record-remark{font-size:12px;color:var(--primary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
 .record-amount{font-size:17px;font-weight:700;margin-right:6px;white-space:nowrap}
 .amount-income{color:var(--success)}
 .amount-expense{color:var(--danger)}
@@ -167,21 +164,6 @@ textarea:focus{border-color:var(--primary)}
 .cat-track{flex:1;height:6px;background:#f0f0f5;border-radius:3px;overflow:hidden}
 .cat-fill{height:100%;border-radius:3px;transition:width .6s}
 .cat-val{font-size:11px;color:var(--gray);width:60px;text-align:right;flex-shrink:0}
-.cal-nav-btn{width:36px;height:36px;border:none;background:#eef4ff;border-radius:10px;font-size:18px;font-weight:700;cursor:pointer;color:var(--primary)}
-.cal-nav-btn:active{transform:scale(.92)}
-.cal-month{font-size:15px;font-weight:700;color:var(--dark)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:0 15px;margin-bottom:8px}
-.cal-dow{text-align:center;font-size:11px;color:var(--gray);padding:4px 0;font-weight:500}
-.cal-cell{height:50px;background:#fff;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:1.5px solid transparent;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:all .15s}
-.cal-cell:active{transform:scale(.96)}
-.cal-cell.today{border-color:var(--primary)}
-.cal-cell.sel{background:#eef4ff;border-color:var(--primary);font-weight:700}
-.cal-cell.other{opacity:.35;pointer-events:none;background:transparent;box-shadow:none}
-.cal-daynum{font-size:15px;font-weight:600;color:var(--dark);line-height:1.1}
-.cal-badge{font-size:14px;line-height:1;margin-top:2px}
-.cal-legend{display:flex;justify-content:center;gap:14px;font-size:11px;color:var(--gray);padding:0 15px 10px;flex-wrap:wrap}
-.cal-selected-label{text-align:center;font-size:13px;color:#555;padding:6px 15px 4px;font-weight:600}
-.cal-record-list{list-style:none;padding:0 15px}
 </style>
 </head>
 <body>
@@ -295,31 +277,6 @@ textarea:focus{border-color:var(--primary)}
   </div>
 </div>
 
-<!-- 日历界面 -->
-<div id="calView" style="display:none">
-  <div class="header">
-    <div class="total-amount">📅 日历</div>
-    <div>点击日期查看当天记录</div>
-  </div>
-  <div class="cal-header" style="display:flex;justify-content:space-between;align-items:center;margin:0 15px 10px;background:#fff;border-radius:12px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
-    <button class="cal-nav-btn" onclick="prevMonth()">‹</button>
-    <div class="cal-month" id="calMonthLabel"></div>
-    <button class="cal-nav-btn" onclick="nextMonth()">›</button>
-  </div>
-  <div class="cal-grid" id="calGrid"></div>
-  <div class="cal-legend">
-    <span>💰 达成攒钱目标</span>
-    <span>🎉 当日未超限额</span>
-    <span>❌ 当日超限额</span>
-  </div>
-  <div class="cal-selected-label" id="calSelLabel" style="display:none"></div>
-  <ul class="cal-record-list record-list" id="calRecordList"></ul>
-  <div id="calEmpty" class="empty-state" style="display:none">
-    <div class="empty-icon">📅</div>
-    <div>这一天还没有记账记录</div>
-  </div>
-</div>
-
 <!-- 设置界面 -->
 <div id="settingsView" style="display:none">
   <div class="header"><div class="total-amount">⚙️ 设置</div></div>
@@ -369,10 +326,6 @@ textarea:focus{border-color:var(--primary)}
     <div class="nav-icon">🏠</div>
     <div>记账</div>
   </div>
-  <div class="nav-item" onclick="switchTab('cal',this)">
-    <div class="nav-icon">📅</div>
-    <div>日历</div>
-  </div>
   <div class="nav-item" onclick="switchTab('stats',this)">
     <div class="nav-icon">📊</div>
     <div>统计</div>
@@ -395,8 +348,7 @@ textarea:focus{border-color:var(--primary)}
     </div>
     <input class="amt-input" id="mAmt" type="number" placeholder="0.00" inputmode="decimal" step="0.01" min="0">
     <div class="cat-grid" id="mCatGrid"></div>
-    <input class="note-inp" id="mNote" type="text" placeholder="📝 描述（选填）" autocomplete="off">
-    <input class="note-inp" id="mRemark" type="text" placeholder="💬 备注（选填，额外备注信息）" autocomplete="off">
+    <input class="note-inp" id="mNote" type="text" placeholder="📝 备注（选填）" autocomplete="off">
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeEditModal()">取消</button>
       <button class="btn-save" id="saveBtn" onclick="saveModal()">保存</button>
@@ -474,11 +426,6 @@ var editingIdx = -1;
 var mType = 'expense';
 var mCat = '';
 var alerted = JSON.parse(localStorage.getItem('alerted') || '{}');
-
-// ===== 日历状态 =====
-var calYear = 0, calMonth = 0;        // 当前显示的年月
-var selectedCalDate = null;           // 选中的日期字符串（toDateString），null=未选
-var goalDayStr = null;                // 达成攒钱目标的那天
 
 // ===== 唯一ID生成器 =====
 var _idCounter = 0;
@@ -560,7 +507,7 @@ function parseTextMulti(text){
 // ===== 单句识别 =====
 function parseSingle(text){
   var t = text.toLowerCase();
-  var result = {type:'expense', amount:0, cat:'其他', catEmo:'📦', note:'', remark:'', raw:text};
+  var result = {type:'expense', amount:0, cat:'其他', catEmo:'📦', note:'', raw:text};
   var amt = 0;
 
   // 1. "X块Y毛/角"
@@ -651,7 +598,7 @@ function parseSingle(text){
   }
 
   // 备注清洗
-  var note = text.replace(/(\d+(\.\d+)?)\s*(块钱|元|块|万|w|毛|角)?/g, ' ').replace(/花了|今天|昨天|早上|中午|晚上|下午|我|去|了|一笔|钱|乘了|搭了|攒|存|存入|买|吃/g, ' ').replace(/\s+/g, ' ').trim();
+  var note = text.replace(/(\d+(\.\d+)?)\s*(块钱|元|块|万|w|毛|角)?/g, ' ').replace(/花了|今天|昨天|早上|中午|晚上|下午|我|去|了|一笔|钱|坐|打|乘了|搭了|费|交|攒|存|存入|买|吃/g, ' ').replace(/\s+/g, ' ').trim();
   if(note === '支出' || note === '收入' || note === '攒钱' || note === ''){
     if(result.type === 'income') note = '收入';
     else if(result.type === 'save') note = '攒钱';
@@ -712,7 +659,6 @@ function saveAllPending(){
       type: r.type,
       cat: r.cat,
       catEmo: r.catEmo,
-      remark: r.remark || '',
       time: now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
       date: now.toDateString()
     });
@@ -746,7 +692,6 @@ function showEditPending(){
   document.getElementById('saveBtn').onclick = saveEditPending;
   document.getElementById('mAmt').value = r.amount;
   document.getElementById('mNote').value = r.note;
-  document.getElementById('mRemark').value = r.remark || '';
   renderMCats();
   document.getElementById('previewBox').classList.remove('on');
   openEditModal();
@@ -762,7 +707,6 @@ function saveEditPending(){
   pending[editingIdx].cat = mCat;
   pending[editingIdx].note = note || (mType === 'income' ? '收入' : mType === 'save' ? '攒钱' : '支出');
   pending[editingIdx].type = mType;
-  pending[editingIdx].remark = document.getElementById('mRemark').value.trim();
   var co = CATS[mType].find(function(c){ return c.n === mCat; }) || CATS[mType][CATS[mType].length - 1];
   pending[editingIdx].catEmo = co.o;
   editingIdx++;
@@ -781,7 +725,6 @@ function editRecord(id){
   document.getElementById('saveBtn').onclick = saveEditSingle;
   document.getElementById('mAmt').value = rec.amount;
   document.getElementById('mNote').value = rec.desc;
-  document.getElementById('mRemark').value = rec.remark || '';
   renderMCats();
   openEditModal();
 }
@@ -800,7 +743,7 @@ function saveEditSingle(){
   if(mType === 'save') saveGoal.saved += a;
   if(mType === 'expense') saveGoal.saved = Math.max(0, saveGoal.saved - a);
 
-  rec.type = mType; rec.amount = a; rec.cat = mCat; rec.desc = note || (mType === 'income' ? '收入' : mType === 'save' ? '攒钱' : '支出'); rec.catEmo = co.o; rec.remark = document.getElementById('mRemark').value.trim();
+  rec.type = mType; rec.amount = a; rec.cat = mCat; rec.desc = note || (mType === 'income' ? '收入' : mType === 'save' ? '攒钱' : '支出'); rec.catEmo = co.o;
   save(); editingId = null; closeEditModal(); render(); checkSaveGoal(); toast('✅ 已更新');
 }
 
@@ -819,7 +762,6 @@ function saveNew(){
     type: mType,
     cat: mCat,
     catEmo: co.o,
-    remark: document.getElementById('mRemark').value.trim(),
     time: now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
     date: now.toDateString()
   });
@@ -1027,13 +969,11 @@ function save(){
 // ===== 渲染主列表（事件委托）=====
 function render(){
   ensureDateField();
-  computeGoalDay();
   updateTotals();
   updateBudgetBar();
   renderList();
   renderStats();
   renderSaveGoal();
-  if(document.getElementById('calView').style.display === 'block') renderCalendar();
 }
 
 function updateTotals(){
@@ -1080,33 +1020,6 @@ function updateBudgetBar(){
   }
 }
 
-// 生成单条记录 <li>（主列表与日历列表共用）
-function buildRecordItem(x){
-  var li = document.createElement('li');
-  li.className = 'record-item';
-  li.setAttribute('data-id', x.id);
-  var typeIcon = x.type === 'income' ? '⬆️' : x.type === 'save' ? '🐷' : '⬇️';
-  var amtClass = x.type === 'income' ? 'amount-income' : x.type === 'save' ? 'amount-save' : 'amount-expense';
-  var remarkHtml = (x.remark && x.remark.trim()) ? '<div class="record-remark">📝 ' + esc(x.remark) + '</div>' : '';
-  // 清洗描述：去掉开头的金额前缀（如"四块"、"5元"、"两块五"等）
-  var cleanDesc = (x.desc || '').replace(/^[一二三四五六七八九十百千万两\d]+(\.\d+)?\s*(块钱|元|块|毛|角)?\s*/, '').replace(/^\s*[⬇️⬆️🐷]\s*/, '').trim() || x.desc || '';
-
-  li.innerHTML =
-    '<div class="record-info">' +
-      '<div class="record-desc">' + (x.catEmo || '📦') + ' ' + esc(cleanDesc) + '</div>' +
-      '<div class="record-time">' + esc(x.cat) + ' · ' + esc(x.time || '') + '</div>' +
-      remarkHtml +
-    '</div>' +
-    '<div style="display:flex;align-items:center">' +
-      '<div class="record-amount ' + amtClass + '">' + typeIcon + ' ' + (x.type === 'income' ? '+' : x.type === 'save' ? '🐷' : '-') + '¥' + fmt(x.amount) + '</div>' +
-      '<div class="record-actions">' +
-        '<button class="act-btn" data-id="' + x.id + '" data-action="edit" title="编辑" onclick="editRecord(\'' + x.id + '\')">✏️</button>' +
-        '<button class="act-btn" data-id="' + x.id + '" data-action="delete" title="删除" onclick="askDelete(\'' + x.id + '\')">🗑️</button>' +
-      '</div>' +
-    '</div>';
-  return li;
-}
-
 function renderList(){
   var list = getFiltered();
   var el = document.getElementById('recordList');
@@ -1114,18 +1027,30 @@ function renderList(){
   el.innerHTML = '';
   if(list.length === 0){ empty.style.display = 'block'; return; }
   empty.style.display = 'none';
-  list.forEach(function(x){ el.appendChild(buildRecordItem(x)); });
+  list.forEach(function(x){
+    var li = document.createElement('li');
+    li.className = 'record-item';
+    li.setAttribute('data-id', x.id);
+    var typeIcon = x.type === 'income' ? '⬆️' : x.type === 'save' ? '🐷' : '⬇️';
+    var amtClass = x.type === 'income' ? 'amount-income' : x.type === 'save' ? 'amount-save' : 'amount-expense';
+    li.innerHTML =
+      '<div class="record-info">' +
+        '<div class="record-desc">' + (x.catEmo || '📦') + ' ' + esc(x.desc) + '</div>' +
+        '<div class="record-time">' + esc(x.cat) + ' · ' + esc(x.time || '') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center">' +
+        '<div class="record-amount ' + amtClass + '">' + typeIcon + ' ' + (x.type === 'income' ? '+' : x.type === 'save' ? '🐷' : '-') + '¥' + fmt(x.amount) + '</div>' +
+        '<div class="record-actions">' +
+          '<button class="act-btn" data-id="' + x.id + '" data-action="edit" title="编辑" onclick="editRecord(\'' + x.id + '\')">✏️</button>' +
+          '<button class="act-btn" data-id="' + x.id + '" data-action="delete" title="删除" onclick="askDelete(\'' + x.id + '\')">🗑️</button>' +
+        '</div>' +
+      '</div>';
+    el.appendChild(li);
+  });
 }
 
 // 事件委托：点击列表项空白处时进入编辑（删除/编辑按钮已用内联 onclick 处理，避免双重触发）
 document.getElementById('recordList').addEventListener('click', function(e){
-  if(e.target.closest('.act-btn')) return;
-  var item = e.target.closest('.record-item');
-  if(item && item.dataset.id) editRecord(item.dataset.id);
-});
-
-// 日历列表同样支持点开编辑
-document.getElementById('calRecordList').addEventListener('click', function(e){
   if(e.target.closest('.act-btn')) return;
   var item = e.target.closest('.record-item');
   if(item && item.dataset.id) editRecord(item.dataset.id);
@@ -1231,103 +1156,10 @@ function switchTab(tab, el){
   document.getElementById('mainView').style.display = tab === 'main' ? 'block' : 'none';
   document.getElementById('statsView').style.display = tab === 'stats' ? 'block' : 'none';
   document.getElementById('settingsView').style.display = tab === 'settings' ? 'block' : 'none';
-  document.getElementById('calView').style.display = tab === 'cal' ? 'block' : 'none';
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
   if(el) el.classList.add('active');
   if(tab === 'stats') render();
-  if(tab === 'cal') openCalendar();
 }
-
-// ===== 日历功能 =====
-function openCalendar(){
-  var now = new Date();
-  calYear = now.getFullYear();
-  calMonth = now.getMonth();
-  selectedCalDate = null;
-  computeGoalDay();
-  renderCalendar();
-  document.getElementById('calSelLabel').style.display = 'none';
-  document.getElementById('calRecordList').innerHTML = '';
-  document.getElementById('calEmpty').style.display = 'none';
-}
-
-function computeGoalDay(){
-  goalDayStr = null;
-  if(saveGoal.target <= 0) return;
-  var byDay = {};
-  records.forEach(function(x){
-    if(x.type === 'save') byDay[x.date] = (byDay[x.date] || 0) + x.amount;
-    else if(x.type === 'expense') byDay[x.date] = (byDay[x.date] || 0) - x.amount;
-  });
-  var days = Object.keys(byDay).sort(function(a,b){ return new Date(a) - new Date(b); });
-  var cum = 0;
-  for(var i = 0; i < days.length; i++){
-    cum = Math.max(0, cum + byDay[days[i]]);
-    if(cum >= saveGoal.target){ goalDayStr = days[i]; break; }
-  }
-}
-
-function dayExpense(ds){
-  return records.filter(function(x){ return x.type === 'expense' && x.date === ds; })
-    .reduce(function(s,x){ return s + x.amount; }, 0);
-}
-
-function dayHasRecords(ds){
-  return records.some(function(x){ return x.date === ds; });
-}
-
-function renderCalendar(){
-  var grid = document.getElementById('calGrid');
-  var first = new Date(calYear, calMonth, 1);
-  var startDow = first.getDay();
-  var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  document.getElementById('calMonthLabel').textContent = calYear + '年' + (calMonth + 1) + '月';
-  var dows = ['日','一','二','三','四','五','六'];
-  var html = dows.map(function(d){ return '<div class="cal-dow">' + d + '</div>'; }).join('');
-  for(var i = 0; i < startDow; i++){ html += '<div class="cal-cell other"></div>'; }
-  var todayStr = new Date().toDateString();
-  for(var d = 1; d <= daysInMonth; d++){
-    var cellDate = new Date(calYear, calMonth, d);
-    var ds = cellDate.toDateString();
-    var cls = 'cal-cell';
-    if(ds === todayStr) cls += ' today';
-    if(ds === selectedCalDate) cls += ' sel';
-    var badge = '';
-    if(ds === goalDayStr) badge = '💰';
-    else if(budget.daily > 0 && dayHasRecords(ds)){
-      badge = dayExpense(ds) <= budget.daily ? '🎉' : '❌';
-    }
-    html += '<div class="' + cls + '" onclick="selectCalDate(\'' + ds + '\')">' +
-              '<div class="cal-daynum">' + d + '</div>' +
-              (badge ? '<div class="cal-badge">' + badge + '</div>' : '') +
-            '</div>';
-  }
-  grid.innerHTML = html;
-}
-
-function selectCalDate(ds){
-  selectedCalDate = ds;
-  renderCalendar();
-  renderCalRecords();
-}
-
-function renderCalRecords(){
-  var list = records.filter(function(x){ return x.date === selectedCalDate; })
-    .sort(function(a,b){ return String(b.time || '').localeCompare(String(a.time || '')); });
-  var el = document.getElementById('calRecordList');
-  var empty = document.getElementById('calEmpty');
-  el.innerHTML = '';
-  var d = new Date(selectedCalDate);
-  var label = document.getElementById('calSelLabel');
-  label.style.display = 'block';
-  label.textContent = '📅 ' + d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'}) + ' · ' + list.length + ' 笔';
-  if(list.length === 0){ empty.style.display = 'block'; return; }
-  empty.style.display = 'none';
-  list.forEach(function(x){ el.appendChild(buildRecordItem(x)); });
-}
-
-function prevMonth(){ calMonth--; if(calMonth < 0){ calMonth = 11; calYear--; } renderCalendar(); }
-function nextMonth(){ calMonth++; if(calMonth > 11){ calMonth = 0; calYear++; } renderCalendar(); }
 
 // ===== 工具 =====
 function fmt(n){ return Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
@@ -1347,10 +1179,10 @@ function toast(msg){
 // ===== 导出CSV =====
 function exportCSV(){
   if(!records.length){ toast('📭 暂无数据'); return; }
-  var csv = '﻿类型,金额,分类,描述,备注,时间\n';
+  var csv = '﻿类型,金额,分类,备注,时间\n';
   records.forEach(function(x){
     var type = x.type === 'income' ? '收入' : x.type === 'save' ? '攒钱' : '支出';
-    csv += type + ',' + x.amount + ',' + x.cat + ',"' + (x.desc || '') + '","' + (x.remark || '') + '",' + x.time + '\n';
+    csv += type + ',' + x.amount + ',' + x.cat + ',"' + x.desc + '",' + x.time + '\n';
   });
   var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
   var url = URL.createObjectURL(blob);
@@ -1400,7 +1232,6 @@ function importJSON(text){
       amount: parseFloat(r.amount) || 0,
       cat: r.cat || '其他',
       desc: r.desc || '',
-      remark: r.remark || '',
       catEmo: r.catEmo || '📦',
       time: r.time || new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
       date: r.date || new Date().toDateString()
@@ -1428,9 +1259,8 @@ function importCSV(text){
       amount: amount,
       cat: cols[2].trim() || '其他',
       desc: (cols[3] || '').trim(),
-      remark: (cols[4] || '').trim(),
       catEmo: '📦',
-      time: cols[5] ? cols[5].trim() : new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
+      time: cols[4] ? cols[4].trim() : new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),
       date: new Date().toDateString()
     });
   }
@@ -1470,7 +1300,6 @@ function clearAllData(){
 document.getElementById('voiceInput').addEventListener('keydown', function(e){
   if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); parseAndShow(); }
 });
-
 </script>
 </body>
 </html>
